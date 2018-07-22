@@ -1,12 +1,14 @@
 Title: First Post
 Date: 2018-07-21 23:30
-Modified: 2017-10-13 12:40
+Modified: 2018-07-21 23:30
 Status: published
 Category: This site
 Tags: python, markdown, blog
 Slug: first-post
 Authors: Sebastian Graeff
-Summary: This is my first post! This post is a test and might be removed.
+Series: test-blog-series
+Series_index: 1
+Summary: This is my first post! This post is a test and might be removed. This post is part of a series of demonstration posts.
 
 Hey all! This is my first post.
 
