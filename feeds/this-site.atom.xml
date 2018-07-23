@@ -1214,11 +1214,4 @@ h6:hover .anchor-link {
 &lt;/script&gt;
 </content><category term="python"></category><category term="markdown"></category><category term="blog"></category></entry><entry><title>First Post</title><link href="https://sebastian-graeff.github.io/first-post.html" rel="alternate"></link><published>2018-07-21T23:30:00+02:00</published><updated>2018-07-21T23:30:00+02:00</updated><author><name>Sebastian Graeff</name></author><id>tag:sebastian-graeff.github.io,2018-07-21:/first-post.html</id><summary type="html">&lt;p&gt;This is my first post! This post is a test and might be removed. This post is part of a series of demonstration posts.&lt;/p&gt;</summary><content type="html">&lt;p&gt;Hey all! This is my first post.&lt;/p&gt;
 &lt;p&gt;Stay tuned for further posts and information on my journey through DATA.&lt;/p&gt;</content><category term="python"></category><category term="markdown"></category><category term="blog"></category></entry><entry><title>Second Post</title><link href="https://sebastian-graeff.github.io/second-post.html" rel="alternate"></link><published>2018-07-21T23:30:00+02:00</published><updated>2018-07-21T23:30:00+02:00</updated><author><name>Sebastian Graeff</name></author><id>tag:sebastian-graeff.github.io,2018-07-21:/second-post.html</id><summary type="html">&lt;p&gt;This is my second post! This post is a test and might be removed. This post is part of a series of demonstration posts.&lt;/p&gt;</summary><content type="html">&lt;p&gt;Hey all! This is my second post.&lt;/p&gt;
-&lt;p&gt;This is the second post of a series of posts. It will show series and an embedded youtube video.&lt;/p&gt;
-&lt;p&gt;&lt;span class="videobox"&gt;
-                &lt;iframe width="640" height="390"
-                    src='https://www.youtube.com/embed/https://www.youtube.com/watch?v=Qq-5frjUfK0'
-                    frameborder='0' webkitAllowFullScreen mozallowfullscreen
-                    allowFullScreen&gt;
-                &lt;/iframe&gt;
-            &lt;/span&gt;&lt;/p&gt;</content><category term="python"></category><category term="markdown"></category><category term="blog"></category></entry></feed>
+&lt;p&gt;This is the second post of a series of posts. It will show series and an embedded youtube video.&lt;/p&gt;</content><category term="python"></category><category term="markdown"></category><category term="blog"></category></entry></feed>
