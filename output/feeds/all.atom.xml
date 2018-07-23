@@ -1,275 +1,44 @@
-<!DOCTYPE html>
-<html lang="en" prefix="og: http://ogp.me/ns# fb: https://www.facebook.com/2008/fbml">
-<head>
-    <title>Blogging with iPython notebooks in pelican - Sebastian Graeff</title>
-    <!-- Using the latest rendering mode for IE -->
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-
-
-
-<style type="text/css">
-
-/*some stuff for output/input prompts*/
-div.cell{border:1px solid transparent;display:-webkit-box;-webkit-box-orient:vertical;-webkit-box-align:stretch;display:-moz-box;-moz-box-orient:vertical;-moz-box-align:stretch;display:box;box-orient:vertical;box-align:stretch;display:flex;flex-direction:column;align-items:stretch}div.cell.selected{border-radius:4px;border:thin #ababab solid}
-div.cell.edit_mode{border-radius:4px;border:thin #008000 solid}
-div.cell{width:100%;padding:5px 5px 5px 0;margin:0;outline:none}
-div.prompt{min-width:11ex;padding:.4em;margin:0;font-family:monospace;text-align:right;line-height:1.21429em}
-@media (max-width:480px){div.prompt{text-align:left}}div.inner_cell{display:-webkit-box;-webkit-box-orient:vertical;-webkit-box-align:stretch;display:-moz-box;-moz-box-orient:vertical;-moz-box-align:stretch;display:box;box-orient:vertical;box-align:stretch;display:flex;flex-direction:column;align-items:stretch;-webkit-box-flex:1;-moz-box-flex:1;box-flex:1;flex:1}
-div.input_area{border:1px solid #cfcfcf;border-radius:4px;background:#f7f7f7;line-height:1.21429em}
-div.prompt:empty{padding-top:0;padding-bottom:0}
-div.input{page-break-inside:avoid;display:-webkit-box;-webkit-box-orient:horizontal;-webkit-box-align:stretch;display:-moz-box;-moz-box-orient:horizontal;-moz-box-align:stretch;display:box;box-orient:horizontal;box-align:stretch;}
-div.inner_cell{width:90%;}
-div.input_area{border:1px solid #cfcfcf;border-radius:4px;background:#f7f7f7;}
-div.input_prompt{color:navy;border-top:1px solid transparent;}
-div.output_wrapper{margin-top:5px;position:relative;display:-webkit-box;-webkit-box-orient:vertical;-webkit-box-align:stretch;display:-moz-box;-moz-box-orient:vertical;-moz-box-align:stretch;display:box;box-orient:vertical;box-align:stretch;width:100%;}
-div.output_scroll{height:24em;width:100%;overflow:auto;border-radius:4px;-webkit-box-shadow:inset 0 2px 8px rgba(0, 0, 0, 0.8);-moz-box-shadow:inset 0 2px 8px rgba(0, 0, 0, 0.8);box-shadow:inset 0 2px 8px rgba(0, 0, 0, 0.8);}
-div.output_collapsed{margin:0px;padding:0px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-box-align:stretch;display:-moz-box;-moz-box-orient:vertical;-moz-box-align:stretch;display:box;box-orient:vertical;box-align:stretch;width:100%;}
-div.out_prompt_overlay{height:100%;padding:0px 0.4em;position:absolute;border-radius:4px;}
-div.out_prompt_overlay:hover{-webkit-box-shadow:inset 0 0 1px #000000;-moz-box-shadow:inset 0 0 1px #000000;box-shadow:inset 0 0 1px #000000;background:rgba(240, 240, 240, 0.5);}
-div.output_prompt{color:darkred;}
-
-a.anchor-link:link{text-decoration:none;padding:0px 20px;visibility:hidden;}
-h1:hover .anchor-link,h2:hover .anchor-link,h3:hover .anchor-link,h4:hover .anchor-link,h5:hover .anchor-link,h6:hover .anchor-link{visibility:visible;}
-/* end stuff for output/input prompts*/
-
-
-.highlight-ipynb .hll { background-color: #ffffcc }
-.highlight-ipynb  { background: #f8f8f8; }
-.highlight-ipynb .c { color: #408080; font-style: italic } /* Comment */
-.highlight-ipynb .err { border: 1px solid #FF0000 } /* Error */
-.highlight-ipynb .k { color: #008000; font-weight: bold } /* Keyword */
-.highlight-ipynb .o { color: #666666 } /* Operator */
-.highlight-ipynb .cm { color: #408080; font-style: italic } /* Comment.Multiline */
-.highlight-ipynb .cp { color: #BC7A00 } /* Comment.Preproc */
-.highlight-ipynb .c1 { color: #408080; font-style: italic } /* Comment.Single */
-.highlight-ipynb .cs { color: #408080; font-style: italic } /* Comment.Special */
-.highlight-ipynb .gd { color: #A00000 } /* Generic.Deleted */
-.highlight-ipynb .ge { font-style: italic } /* Generic.Emph */
-.highlight-ipynb .gr { color: #FF0000 } /* Generic.Error */
-.highlight-ipynb .gh { color: #000080; font-weight: bold } /* Generic.Heading */
-.highlight-ipynb .gi { color: #00A000 } /* Generic.Inserted */
-.highlight-ipynb .go { color: #888888 } /* Generic.Output */
-.highlight-ipynb .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
-.highlight-ipynb .gs { font-weight: bold } /* Generic.Strong */
-.highlight-ipynb .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
-.highlight-ipynb .gt { color: #0044DD } /* Generic.Traceback */
-.highlight-ipynb .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
-.highlight-ipynb .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
-.highlight-ipynb .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
-.highlight-ipynb .kp { color: #008000 } /* Keyword.Pseudo */
-.highlight-ipynb .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
-.highlight-ipynb .kt { color: #B00040 } /* Keyword.Type */
-.highlight-ipynb .m { color: #666666 } /* Literal.Number */
-.highlight-ipynb .s { color: #BA2121 } /* Literal.String */
-.highlight-ipynb .na { color: #7D9029 } /* Name.Attribute */
-.highlight-ipynb .nb { color: #008000 } /* Name.Builtin */
-.highlight-ipynb .nc { color: #0000FF; font-weight: bold } /* Name.Class */
-.highlight-ipynb .no { color: #880000 } /* Name.Constant */
-.highlight-ipynb .nd { color: #AA22FF } /* Name.Decorator */
-.highlight-ipynb .ni { color: #999999; font-weight: bold } /* Name.Entity */
-.highlight-ipynb .ne { color: #D2413A; font-weight: bold } /* Name.Exception */
-.highlight-ipynb .nf { color: #0000FF } /* Name.Function */
-.highlight-ipynb .nl { color: #A0A000 } /* Name.Label */
-.highlight-ipynb .nn { color: #0000FF; font-weight: bold } /* Name.Namespace */
-.highlight-ipynb .nt { color: #008000; font-weight: bold } /* Name.Tag */
-.highlight-ipynb .nv { color: #19177C } /* Name.Variable */
-.highlight-ipynb .ow { color: #AA22FF; font-weight: bold } /* Operator.Word */
-.highlight-ipynb .w { color: #bbbbbb } /* Text.Whitespace */
-.highlight-ipynb .mf { color: #666666 } /* Literal.Number.Float */
-.highlight-ipynb .mh { color: #666666 } /* Literal.Number.Hex */
-.highlight-ipynb .mi { color: #666666 } /* Literal.Number.Integer */
-.highlight-ipynb .mo { color: #666666 } /* Literal.Number.Oct */
-.highlight-ipynb .sb { color: #BA2121 } /* Literal.String.Backtick */
-.highlight-ipynb .sc { color: #BA2121 } /* Literal.String.Char */
-.highlight-ipynb .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
-.highlight-ipynb .s2 { color: #BA2121 } /* Literal.String.Double */
-.highlight-ipynb .se { color: #BB6622; font-weight: bold } /* Literal.String.Escape */
-.highlight-ipynb .sh { color: #BA2121 } /* Literal.String.Heredoc */
-.highlight-ipynb .si { color: #BB6688; font-weight: bold } /* Literal.String.Interpol */
-.highlight-ipynb .sx { color: #008000 } /* Literal.String.Other */
-.highlight-ipynb .sr { color: #BB6688 } /* Literal.String.Regex */
-.highlight-ipynb .s1 { color: #BA2121 } /* Literal.String.Single */
-.highlight-ipynb .ss { color: #19177C } /* Literal.String.Symbol */
-.highlight-ipynb .bp { color: #008000 } /* Name.Builtin.Pseudo */
-.highlight-ipynb .vc { color: #19177C } /* Name.Variable.Class */
-.highlight-ipynb .vg { color: #19177C } /* Name.Variable.Global */
-.highlight-ipynb .vi { color: #19177C } /* Name.Variable.Instance */
-.highlight-ipynb .il { color: #666666 } /* Literal.Number.Integer.Long */
-</style>
-
-<style type="text/css">
-/* Overrides of notebook CSS for static HTML export */
-div.entry-content {
-  overflow: visible;
-  padding: 8px;
-}
-.input_area {
-  padding: 0.2em;
-}
-
-a.heading-anchor {
- white-space: normal;
-}
-
-.rendered_html
-code {
- font-size: .8em;
-}
-
-pre.ipynb {
-  color: black;
-  background: #f7f7f7;
-  border: none;
-  box-shadow: none;
-  margin-bottom: 0;
-  padding: 0;
-  margin: 0px;
-  font-size: 13px;
-}
-
-/* remove the prompt div from text cells */
-div.text_cell .prompt {
-    display: none;
-}
-
-/* remove horizontal padding from text cells, */
-/* so it aligns with outer body text */
-div.text_cell_render {
-    padding: 0.5em 0em;
-}
-
-img.anim_icon{padding:0; border:0; vertical-align:middle; -webkit-box-shadow:none; -box-shadow:none}
-
-div.collapseheader {
-    width=100%;
-    padding: 2px;
-    cursor: pointer;
-    font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;
-}
-
-</style>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
-<script type="text/javascript">
-init_mathjax = function() {
-    if (window.MathJax) {
-        // MathJax loaded
-        MathJax.Hub.Config({
-            tex2jax: {
-                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
-                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
-            },
-            displayAlign: 'left', // Change this to 'center' to center equations.
-            "HTML-CSS": {
-                styles: {'.MathJax_Display': {"margin": 0}}
-            }
-        });
-        MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
-    }
-}
-init_mathjax();
-</script>
-
-<link rel="canonical" href="/slug-slug-slug.html">
-
-        <meta name="author" content="Me" />
-        <meta name="keywords" content="tag2" />
-        <meta name="description" content="sample notebook" />
-
-        <meta property="og:site_name" content="Sebastian Graeff" />
-        <meta property="og:type" content="article"/>
-        <meta property="og:title" content="Blogging with iPython notebooks in pelican"/>
-        <meta property="og:url" content="/slug-slug-slug.html"/>
-        <meta property="og:description" content="sample notebook"/>
-        <meta property="article:published_time" content="2013-02-16" />
-            <meta property="article:section" content="Category" />
-            <meta property="article:tag" content="tag2" />
-            <meta property="article:author" content="Me" />
-
-
-
-    <!-- Bootstrap -->
-        <link rel="stylesheet" href="/theme/css/bootstrap.flatly.min.css" type="text/css"/>
-    <link href="/theme/css/font-awesome.min.css" rel="stylesheet">
-
-    <link href="/theme/css/pygments/native.css" rel="stylesheet">
-    <link rel="stylesheet" href="/theme/css/style.css" type="text/css"/>
-
-
-
-
-
-</head>
-<body>
-
-<div class="navbar navbar-default navbar-fixed-top" role="navigation">
-    <div class="container">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a href="/" class="navbar-brand">
-Sebastian Graeff            </a>
-        </div>
-        <div class="collapse navbar-collapse navbar-ex1-collapse">
-            <ul class="nav navbar-nav">
-                        <li class="active">
-                            <a href="/category/category.html">Category</a>
-                        </li>
-                        <li >
-                            <a href="/category/this-site.html">This site</a>
-                        </li>
-            </ul>
-            <ul class="nav navbar-nav navbar-right">
-            </ul>
-        </div>
-        <!-- /.navbar-collapse -->
-    </div>
-</div> <!-- /.navbar -->
-
-<!-- Banner -->
-<!-- End Banner -->
-
-<!-- Content Container -->
-<div class="container">
-    <div class="row">
-        <div class="col-sm-9">
-    <section id="content">
-        <article>
-            <header class="page-header">
-                <h1>
-                    <a href="/slug-slug-slug.html"
-                       rel="bookmark"
-                       title="Permalink to Blogging with iPython notebooks in pelican">
-                        Blogging with iPython notebooks in pelican
-                    </a>
-                </h1>
-            </header>
-            <div class="entry-content">
-                <div class="panel">
-                    <div class="panel-body">
-<footer class="post-info">
-    <span class="label label-default">Date</span>
-    <span class="published">
-        <i class="fa fa-calendar"></i><time datetime="2013-02-16T00:00:00+02:00"> Sat 16 February 2013</time>
-    </span>
-
-
-
-
-
-<span class="label label-default">Tags</span>
-	<a href="/tag/tag2.html">tag2</a>
-    
-</footer><!-- /.post-info -->                    </div>
-                </div>
-                <style type="text/css">/*!
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Sebastian Graeff</title><link href="https://sebastian-graeff.github.io/" rel="alternate"></link><link href="https://sebastian-graeff.github.io/feeds/all.atom.xml" rel="self"></link><id>https://sebastian-graeff.github.io/</id><updated>2018-07-23T16:00:00+02:00</updated><entry><title>Fourth Post</title><link href="https://sebastian-graeff.github.io/fourth-post.html" rel="alternate"></link><published>2018-07-23T16:00:00+02:00</published><updated>2018-07-23T16:00:00+02:00</updated><author><name>Sebastian Graeff</name></author><id>tag:sebastian-graeff.github.io,2018-07-23:/fourth-post.html</id><summary type="html">&lt;p&gt;This is my fourth post! This post is a test and might be removed. This post is part of a series of demonstration posts. Here I will demonstrate how to use tables.&lt;/p&gt;</summary><content type="html">&lt;p&gt;This is the fourth post of a series of posts. It will demonstrate tables.&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Column Header&lt;/th&gt;
+&lt;th&gt;Column Header&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;Row 1&lt;/td&gt;
+&lt;td&gt;Data 1&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Row 2&lt;/td&gt;
+&lt;td&gt;Data 2&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;</content><category term="python"></category><category term="markdown"></category><category term="blog"></category></entry><entry><title>Third Post</title><link href="https://sebastian-graeff.github.io/third-post.html" rel="alternate"></link><published>2018-07-22T00:00:00+02:00</published><updated>2018-07-22T00:00:00+02:00</updated><author><name>Sebastian Graeff</name></author><id>tag:sebastian-graeff.github.io,2018-07-22:/third-post.html</id><summary type="html">
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h1 id="WELCOME-TO-MY-BLOG"&gt;WELCOME TO MY BLOG&lt;a class="anchor-link" href="#WELCOME-TO-MY-BLOG"&gt;¶&lt;/a&gt;&lt;/h1&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;I'm Sebastian and this is my journey in the world of data. In this blog I will showcase the projects I am working on at the moment, and the courses I am taking to further my skillset.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;I'm relatively new to data so I still have a long way to go. I'll try to show most of my journey on this blog.&lt;/p&gt;</summary><content type="html">&lt;style type="text/css"&gt;/*!
 *
 * IPython notebook
 *
@@ -496,7 +265,7 @@ div.unrecognized_cell .inner_cell a:hover {
   text-decoration: none;
 }
 @media (max-width: 540px) {
-  div.unrecognized_cell > div.prompt {
+  div.unrecognized_cell &gt; div.prompt {
     display: none;
   }
 }
@@ -549,19 +318,19 @@ div.input_prompt {
   color: #303F9F;
   border-top: 1px solid transparent;
 }
-div.input_area > div.highlight {
+div.input_area &gt; div.highlight {
   margin: 0.4em;
   border: none;
   padding: 0px;
   background-color: transparent;
 }
-div.input_area > div.highlight > pre {
+div.input_area &gt; div.highlight &gt; pre {
   margin: 0px;
   border: none;
   padding: 0px;
   background-color: transparent;
 }
-/* The following gets added to the <head> if it is detected that the user has a
+/* The following gets added to the &lt;head&gt; if it is detected that the user has a
  * monospace font with inconsistent normal/bold/italic height.  See
  * notebookmain.js.  Such fonts will have keywords vertically offset with
  * respect to the rest of the text.  The user should select a better font.
@@ -607,7 +376,7 @@ div.input_area > div.highlight > pre {
 }
 /*
 
-Original style from softwaremaniacs.org (c) Ivan Sagalaev <Maniac@SoftwareManiacs.Org>
+Original style from softwaremaniacs.org (c) Ivan Sagalaev &lt;Maniac@SoftwareManiacs.Org&gt;
 Adapted from GitHub theme
 
 */
@@ -1069,7 +838,7 @@ div.text_cell {
   align-items: stretch;
 }
 @media (max-width: 540px) {
-  div.text_cell > div.prompt {
+  div.text_cell &gt; div.prompt {
     display: none;
   }
 }
@@ -1134,8 +903,8 @@ h6:hover .anchor-link {
   font-size: 100%;
   font-style: italic;
 }
-</style>
-<style type="text/css">.highlight .hll { background-color: #ffffcc }
+&lt;/style&gt;
+&lt;style type="text/css"&gt;.highlight .hll { background-color: #ffffcc }
 .highlight  { background: #f8f8f8; }
 .highlight .c { color: #408080; font-style: italic } /* Comment */
 .highlight .err { border: 1px solid #FF0000 } /* Error */
@@ -1203,8 +972,8 @@ h6:hover .anchor-link {
 .highlight .vg { color: #19177C } /* Name.Variable.Global */
 .highlight .vi { color: #19177C } /* Name.Variable.Instance */
 .highlight .vm { color: #19177C } /* Name.Variable.Magic */
-.highlight .il { color: #666666 } /* Literal.Number.Integer.Long */</style>
-<style type="text/css">
+.highlight .il { color: #666666 } /* Literal.Number.Integer.Long */&lt;/style&gt;
+&lt;style type="text/css"&gt;
 /* Temporary definitions which will become obsolete with Notebook release 5.0 */
 .ansi-black-fg { color: #3E424D; }
 .ansi-black-bg { background-color: #3E424D; }
@@ -1240,39 +1009,182 @@ h6:hover .anchor-link {
 .ansi-white-intense-bg { background-color: #A1A6B2; }
 
 .ansi-bold { font-weight: bold; }
-</style>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>sample notebook</p>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In [2]:</div>
-<div class="inner_cell">
-<div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">"Hello World!!!"</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="output_wrapper">
-<div class="output">
-<div class="output_area">
-<div class="prompt"></div>
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>Hello World!!!
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
+&lt;/style&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h1 id="WELCOME-TO-MY-BLOG"&gt;WELCOME TO MY BLOG&lt;a class="anchor-link" href="#WELCOME-TO-MY-BLOG"&gt;¶&lt;/a&gt;&lt;/h1&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;I'm Sebastian and this is my journey in the world of data. In this blog I will showcase the projects I am working on at the moment, and the courses I am taking to further my skillset.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;I'm relatively new to data so I still have a long way to go. I'll try to show most of my journey on this blog.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;Now on to some random dataframe and visulaization.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [1]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;pandas&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;pd&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;numpy&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;np&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;matplotlib.pylab&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;plt&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;random&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [2]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;df&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;DataFrame&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s1"&gt;'A'&lt;/span&gt;&lt;span class="p"&gt;:[&lt;/span&gt;&lt;span class="s2"&gt;"Casablanca"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="s2"&gt;"Berlin"&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt;&lt;span class="s1"&gt;'B'&lt;/span&gt;&lt;span class="p"&gt;:[&lt;/span&gt;&lt;span class="s2"&gt;"New Orleans"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="s2"&gt;"Shenzhen"&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt;&lt;span class="s1"&gt;'C'&lt;/span&gt;&lt;span class="p"&gt;:[&lt;/span&gt;&lt;span class="s2"&gt;"Funafuti"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="s2"&gt;"Santiago"&lt;/span&gt;&lt;span class="p"&gt;]})&lt;/span&gt;
+&lt;span class="n"&gt;df&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+&lt;div class="output_area"&gt;
+&lt;div class="prompt output_prompt"&gt;Out[2]:&lt;/div&gt;
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
+&lt;div&gt;
+&lt;style scoped=""&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+&lt;/style&gt;
+&lt;table border="1" class="dataframe"&gt;
+&lt;thead&gt;
+&lt;tr style="text-align: right;"&gt;
+&lt;th&gt;&lt;/th&gt;
+&lt;th&gt;A&lt;/th&gt;
+&lt;th&gt;B&lt;/th&gt;
+&lt;th&gt;C&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;th&gt;0&lt;/th&gt;
+&lt;td&gt;Casablanca&lt;/td&gt;
+&lt;td&gt;New Orleans&lt;/td&gt;
+&lt;td&gt;Funafuti&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;th&gt;1&lt;/th&gt;
+&lt;td&gt;Berlin&lt;/td&gt;
+&lt;td&gt;Shenzhen&lt;/td&gt;
+&lt;td&gt;Santiago&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [3]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;weird_list&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;_&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;10000&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;number&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;random&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;randint&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;weird_list&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;number&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;test_avg&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;mean&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;weird_list&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;test_std&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;std&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;weird_list&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="nb"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;test_avg&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="nb"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;test_std&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+&lt;div class="output_area"&gt;
+&lt;div class="prompt"&gt;&lt;/div&gt;
+&lt;div class="output_subarea output_stream output_stdout output_text"&gt;
+&lt;pre&gt;4.996
+3.154486329024109
+&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [4]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;dist&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;_&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;10000&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;dist&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;random&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;normal&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;test_avg&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;test_std&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;span class="n"&gt;plt&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;hist&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;dist&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;bins&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;100&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;plt&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;axvline&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'red'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;plt&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;axvline&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'red'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;plt&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+&lt;div class="output_area"&gt;
+&lt;div class="prompt"&gt;&lt;/div&gt;
+&lt;div class="output_png output_subarea "&gt;
+&lt;img src="data:image/png;base64,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
+" /&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;Everything above is completely random, it doesn't have any meaning.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
     mathjaxscript.type = 'text/javascript';
@@ -1299,112 +1211,14 @@ h6:hover .anchor-link {
         "}); ";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-</script>
-
-            </div>
-            <!-- /.entry-content -->
-        </article>
-    </section>
-
-        </div>
-        <div class="col-sm-3" id="sidebar">
-            <aside>
-<!-- Sidebar -->
-<section class="well well-sm">
-  <ul class="list-group list-group-flush">
-
-<!-- Sidebar/Social -->
-<li class="list-group-item">
-  <h4><i class="fa fa-home fa-lg"></i><span class="icon-label">Social</span></h4>
-  <ul class="list-group" id="social">
-    <li class="list-group-item"><a href="#"><i class="fa fa-you-can-add-links-in-your-config-file-square fa-lg"></i> You can add links in your config file</a></li>
-    <li class="list-group-item"><a href="#"><i class="fa fa-another-social-link-square fa-lg"></i> Another social link</a></li>
-  </ul>
-</li>
-<!-- End Sidebar/Social -->
-
-<!-- Sidebar/Tag Cloud -->
-<li class="list-group-item">
-  <a href="/"><h4><i class="fa fa-tags fa-lg"></i><span class="icon-label">Tags</span></h4></a>
-  <ul class="list-group " id="tags">
-    <li class="list-group-item tag-1">
-      <a href="/tag/blog.html">blog</a>
-    </li>
-    <li class="list-group-item tag-1">
-      <a href="/tag/python.html">python</a>
-    </li>
-    <li class="list-group-item tag-1">
-      <a href="/tag/markdown.html">markdown</a>
-    </li>
-    <li class="list-group-item tag-4">
-      <a href="/tag/tag2.html">tag2</a>
-    </li>
-  </ul>
-</li>
-<!-- End Sidebar/Tag Cloud -->
-
-<!-- Sidebar/Links -->
-<li class="list-group-item">
-  <h4><i class="fa fa-external-link-square fa-lg"></i><span class="icon-label">Links</span></h4>
-  <ul class="list-group" id="links">
-    <li class="list-group-item">
-      <a href="http://getpelican.com/" target="_blank">Pelican</a>
-    </li>
-    <li class="list-group-item">
-      <a href="http://python.org/" target="_blank">Python.org</a>
-    </li>
-    <li class="list-group-item">
-      <a href="http://jinja.pocoo.org/" target="_blank">Jinja2</a>
-    </li>
-    <li class="list-group-item">
-      <a href="#" target="_blank">You can modify those links in your config file</a>
-    </li>
-  </ul>
-</li>
-<!-- End Sidebar/Links -->
-  </ul>
-</section>
-<!-- End Sidebar -->            </aside>
-        </div>
-    </div>
-</div>
-<!-- End Content Container -->
-
-<footer>
-   <div class="container">
-      <hr>
-      <div class="row">
-         <div class="col-xs-10">&copy; 2018 Sebastian Graeff
-            &middot; Powered by <a href="https://github.com/getpelican/pelican-themes/tree/master/pelican-bootstrap3" target="_blank">pelican-bootstrap3</a>,
-            <a href="http://docs.getpelican.com/" target="_blank">Pelican</a>,
-            <a href="http://getbootstrap.com" target="_blank">Bootstrap</a>         </div>
-         <div class="col-xs-2"><p class="pull-right"><i class="fa fa-arrow-up"></i> <a href="#">Back to top</a></p></div>
-      </div>
-   </div>
-</footer>
-<script src="/theme/js/jquery.min.js"></script>
-
-<!-- Include all compiled plugins (below), or include individual files as needed -->
-<script src="/theme/js/bootstrap.min.js"></script>
-
-<!-- Enable responsive features in IE8 with Respond.js (https://github.com/scottjehl/Respond) -->
-<script src="/theme/js/respond.min.js"></script>
-
-
-
-<script type="text/javascript">
-jQuery(document).ready(function($) {
-    $("div.collapseheader").click(function () {
-    $header = $(this).children("span").first();
-    $codearea = $(this).children(".input_area");
-    console.log($(this).children());
-    $codearea.slideToggle(500, function () {
-        $header.text(function () {
-            return $codearea.is(":visible") ? "Collapse Code" : "Expand Code";
-        });
-    });
-});
-});
-</script>
-</body>
-</html>
+&lt;/script&gt;
+</content><category term="python"></category><category term="markdown"></category><category term="blog"></category></entry><entry><title>First Post</title><link href="https://sebastian-graeff.github.io/first-post.html" rel="alternate"></link><published>2018-07-21T23:30:00+02:00</published><updated>2018-07-21T23:30:00+02:00</updated><author><name>Sebastian Graeff</name></author><id>tag:sebastian-graeff.github.io,2018-07-21:/first-post.html</id><summary type="html">&lt;p&gt;This is my first post! This post is a test and might be removed. This post is part of a series of demonstration posts.&lt;/p&gt;</summary><content type="html">&lt;p&gt;Hey all! This is my first post.&lt;/p&gt;
+&lt;p&gt;Stay tuned for further posts and information on my journey through DATA.&lt;/p&gt;</content><category term="python"></category><category term="markdown"></category><category term="blog"></category></entry><entry><title>Second Post</title><link href="https://sebastian-graeff.github.io/second-post.html" rel="alternate"></link><published>2018-07-21T23:30:00+02:00</published><updated>2018-07-21T23:30:00+02:00</updated><author><name>Sebastian Graeff</name></author><id>tag:sebastian-graeff.github.io,2018-07-21:/second-post.html</id><summary type="html">&lt;p&gt;This is my second post! This post is a test and might be removed. This post is part of a series of demonstration posts.&lt;/p&gt;</summary><content type="html">&lt;p&gt;Hey all! This is my second post.&lt;/p&gt;
+&lt;p&gt;This is the second post of a series of posts. It will show series and an embedded youtube video.&lt;/p&gt;
+&lt;p&gt;&lt;span class="videobox"&gt;
+                &lt;iframe width="640" height="390"
+                    src='https://www.youtube.com/embed/https://www.youtube.com/watch?v=Qq-5frjUfK0'
+                    frameborder='0' webkitAllowFullScreen mozallowfullscreen
+                    allowFullScreen&gt;
+                &lt;/iframe&gt;
+            &lt;/span&gt;&lt;/p&gt;</content><category term="python"></category><category term="markdown"></category><category term="blog"></category></entry></feed>

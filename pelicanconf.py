@@ -4,7 +4,9 @@ from __future__ import unicode_literals
 
 AUTHOR = 'Sebastian Graeff'
 SITENAME = 'Sebastian Graeff'
-SITEURL = ''
+SITEURL = 'https://sebastian-graeff.github.io/staticsite'
+# Uncomment following line if you want document-relative URLs when developing
+RELATIVE_URLS = True
 
 # Paths
 PATH = 'content'
@@ -41,8 +43,6 @@ SOCIAL = (('You can add links in your config file', '#'),
 DEFAULT_PAGINATION = 5
 
 IGNORE_FILES = ['.ipynb_checkpoints']
-# Uncomment following line if you want document-relative URLs when developing
-#RELATIVE_URLS = True
 
 # Edit to use theme
 PLUGIN_PATHS = ['pelican-plugins']
