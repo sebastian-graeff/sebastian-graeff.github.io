@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 
 AUTHOR = 'Sebastian Graeff'
 SITENAME = 'Sebastian Graeff'
-SITEURL = 'https://sebastian-graeff.github.io/staticsite'
+SITEURL = 'https://sebastian-graeff.github.io/datablog'
 # Uncomment following line if you want document-relative URLs when developing
 RELATIVE_URLS = True
 
@@ -45,7 +45,6 @@ DEFAULT_PAGINATION = 5
 IGNORE_FILES = ['.ipynb_checkpoints']
 
 # Edit to use theme
-PLUGIN_PATHS = ['pelican-plugins']
 
 THEME = 'pelican-themes/pelican-bootstrap3'
 BOOTSTRAP_THEME = 'flatly'
@@ -54,6 +53,8 @@ BOOTSTRAP_THEME = 'flatly'
 DIRECT_TEMPLATES = ('index','tags', 'categories', 'authors', 'archives', 'search')
 
 JINJA_ENVIRONMENT = {'extensions': ['jinja2.ext.i18n']}
+
+PLUGIN_PATHS = ['pelican-plugins']
 
 PLUGINS = [
     'i18n_subsites',
