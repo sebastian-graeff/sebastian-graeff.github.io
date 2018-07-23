@@ -41,8 +41,11 @@ PLUGIN_PATHS = ['pelican-plugins']
 THEME = 'pelican-themes/pelican-bootstrap3'
 BOOTSTRAP_THEME = 'flatly'
 
+# for Tipue Search Plugin
+DIRECT_TEMPLATES = ('index','tags', 'categories', 'authors', 'archives', 'search')
 
 JINJA_ENVIRONMENT = {'extensions': ['jinja2.ext.i18n']}
+
 PLUGINS = [
     'i18n_subsites',
     'series',
@@ -51,7 +54,18 @@ PLUGINS = [
     'liquid_tags.notebook',
     'liquid_tags.include_code',
     'render_math',
-    'pelican-ipynb.markup' ] 
+    'pelican-ipynb.markup',
+    'tipue_search' ] 
 
 I18N_TEMPLATES_LANG = 'en'
 
+# Additional .css and .js files to customize markdown tables
+CUSTOM_CSS = 'static/css/custom.css'
+CUSTOM_JS = 'static/js/custom.js'
+
+STATIC_PATHS = [ 'extra' ]
+
+EXTRA_PATH_METADATA = {
+    'extra/custom.css': {'path': 'static/css/custom.css'},
+    'extra/custom.js': {'path': 'static/js/custom.js'}
+}

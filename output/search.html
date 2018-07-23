@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" prefix="og: http://ogp.me/ns# fb: https://www.facebook.com/2008/fbml">
 <head>
-    <title>Archives - Sebastian Graeff</title>
+    <title>Search - Sebastian Graeff
+</title>
     <!-- Using the latest rendering mode for IE -->
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta charset="utf-8">
@@ -238,31 +239,7 @@ Sebastian Graeff            </a>
 <div class="container">
     <div class="row">
         <div class="col-sm-9">
-    <section id="content">
-      <h1>Archives for Sebastian Graeff</h1>
-        <div id="archives">
-                <p>
-                    <span class="categories-timestamp"><time datetime="2018-07-23T16:00:00+02:00">Mon 23 July 2018</time></span>
-                    <a href="/fourth-post.html">Fourth Post</a>
-                </p>
-                <p>
-                    <span class="categories-timestamp"><time datetime="2018-07-22T00:00:00+02:00">Sun 22 July 2018</time></span>
-                    <a href="/third-post-notebook.html">Third Post</a>
-                </p>
-                <p>
-                    <span class="categories-timestamp"><time datetime="2018-07-21T23:30:00+02:00">Sat 21 July 2018</time></span>
-                    <a href="/first-post.html">First Post</a>
-                </p>
-                <p>
-                    <span class="categories-timestamp"><time datetime="2018-07-21T23:30:00+02:00">Sat 21 July 2018</time></span>
-                    <a href="/second-post.html">Second Post</a>
-                </p>
-                <p>
-                    <span class="categories-timestamp"><time datetime="2018-07-21T23:30:00+02:00">Sat 21 July 2018</time></span>
-                    <a href="/third-post.html">Third Post</a>
-                </p>
-        </div>
-    </section>
+<div id="tipue_search_content"></div>
         </div>
         <div class="col-sm-3" id="sidebar">
             <aside>
@@ -361,5 +338,17 @@ jQuery(document).ready(function($) {
 });
 });
 </script>
+    <script type="text/javascript" src="/theme/tipuesearch/tipuesearch_set.js"></script>
+    <script type="text/javascript" src="/theme/tipuesearch/tipuesearch.min.js"></script>
+    <script>
+    $(document).ready(function() {
+      $('#tipue_search_input').tipuesearch({
+        'mode' : 'json',
+        'show': 10,
+        'newWindow': false,
+        'contentLocation': 'tipuesearch_content.json'
+      });
+    });
+    </script>
 </body>
 </html>
