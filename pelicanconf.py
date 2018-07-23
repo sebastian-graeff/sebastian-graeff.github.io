@@ -5,7 +5,6 @@ from __future__ import unicode_literals
 AUTHOR = 'Sebastian Graeff'
 SITENAME = 'Sebastian Graeff'
 SITEURL = 'https://sebastian-graeff.github.io/datablog'
-# Uncomment following line if you want document-relative URLs when developing
 RELATIVE_URLS = True
 
 # Paths
