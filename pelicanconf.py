@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 
 AUTHOR = 'Sebastian Graeff'
 SITENAME = 'Sebastian Graeff'
-SITEURL = 'https://sebastian-graeff.github.io/datablog'
+SITEURL = 'https://sebastian-graeff.github.io/staticsite'
 RELATIVE_URLS = True
 
 # Paths
