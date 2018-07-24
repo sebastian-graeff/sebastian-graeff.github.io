@@ -4,8 +4,6 @@ from __future__ import unicode_literals
 
 AUTHOR = 'Sebastian Graeff'
 SITENAME = 'Sebastian Graeff'
-SITEURL = 'https://sebastian-graeff.github.io'
-RELATIVE_URLS = True
 
 # Paths
 PATH = 'content'
@@ -43,6 +41,8 @@ DEFAULT_PAGINATION = 5
 
 IGNORE_FILES = ['.ipynb_checkpoints']
 
+SITEURL = 'https://sebastian-graeff.github.io/staticsite'
+RELATIVE_URLS = True
 
 THEME = 'pelican-themes/pelican-bootstrap3'
 BOOTSTRAP_THEME = 'flatly'
