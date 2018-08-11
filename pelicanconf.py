@@ -14,8 +14,6 @@ ARTICLE_PATHS = ['posts']
 DISPLAY_CATEGORIES_ON_MENU = False
 DISPLAY_PAGES_ON_MENU = True
 
-
-
 TIMEZONE = 'Africa/Johannesburg'
 
 DEFAULT_LANG = 'en'
@@ -39,8 +37,6 @@ SOCIAL = (('You can add links in your config file', '#'),
 
 DEFAULT_PAGINATION = 5
 
-IGNORE_FILES = ['.ipynb_checkpoints']
-
 SITEURL = 'https://sebastian-graeff.github.io/staticsite'
 RELATIVE_URLS = True
 
@@ -51,6 +47,10 @@ BOOTSTRAP_THEME = 'flatly'
 DIRECT_TEMPLATES = ('index','tags', 'categories', 'authors', 'archives', 'search')
 
 JINJA_ENVIRONMENT = {'extensions': ['jinja2.ext.i18n']}
+
+MARKUP = ('md', )
+
+IPYNB_SKIP_CSS=True
 
 PLUGIN_PATHS = ['pelican-plugins']
 
@@ -72,6 +72,7 @@ CUSTOM_CSS = 'static/css/custom.css'
 CUSTOM_JS = 'static/js/custom.js'
 
 STATIC_PATHS = [ 'extra' ]
+EXTRA_HEADER = open('_nb_header.html').read()
 
 EXTRA_PATH_METADATA = {
     'extra/custom.css': {'path': 'static/css/custom.css'},
