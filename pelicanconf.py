@@ -48,7 +48,7 @@ DIRECT_TEMPLATES = ('index','tags', 'categories', 'authors', 'archives', 'search
 
 JINJA_ENVIRONMENT = {'extensions': ['jinja2.ext.i18n']}
 
-MARKUP = ('md', )
+MARKUP = ('md', 'ipynb', 'rmd','html')
 
 IPYNB_SKIP_CSS=True
 

@@ -1,0 +1,1408 @@
+---
+title: "Exploring the Global Landslide Catalog (GLC) from NASA"
+author: "Sebastian Graeff"
+date: "September 24, 2018"
+Slug: "EDA-project"
+---
+========================================================
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
+# Load all of the packages that you end up using in your analysis in this code
+# chunk.
+
+# Notice that the parameter "echo" was set to FALSE for this code chunk. This
+# prevents the code from displaying in the knitted HTML output. You should set
+# echo=FALSE for all code chunks in your file, unless it makes sense for your
+# report to show the code that generated a particular plot.
+
+# The other parameters for "message" and "warning" should also be set to FALSE
+# for other code chunks once you have verified that each plot comes out as you
+# want it to. This will clean up the flow of your report.
+
+library(ggplot2)
+library(reshape2)
+library(dplyr)
+library(gridExtra)
+library(data.table)
+library(viridis)
+library(mlr)
+library(memisc)
+library(stringr)
+library(GGally)
+```
+
+Load the data! And summarize some of the variables.
+```{r echo=FALSE, Load_the_Data}
+# Load the Data
+landslide_data <- read.csv("/Users/Sebastian/Desktop/Udacity/Data_Analysis/Term_2/EDA/Project/Global_Landslide_Catalog_Export.csv")
+```
+
+```{r echo=FALSE, warning=FALSE}
+# Remove columns that I can't use, so the new data will contain less variables
+drops <- c("source_link",
+           "photo_link",
+           "notes",
+           "event_import_source",
+           "event_import_id",
+           "created_date",
+           "last_edited_date")
+landslide_data <- landslide_data[ , !(names(landslide_data) %in% drops)]
+```
+
+```{r echo=FALSE, warning=FALSE}
+summary(select_if(landslide_data, is.numeric))
+```
+
+# Univariate Plots Section
+
+From above I see that the fatality rate is maxed at 5000, this is a outlier as
+the mean is much lower. Also ill exclude any zero values since more than 50% of
+the data has a zero fatality rate, which is good of course. And not to forget
+ill also remove all NA values from my new subset.
+
+```{r echo=FALSE, warning=FALSE}
+# Create the fatality_subset dataframe which creates a dataframe that removes
+# all fatality values of Zero and NA
+fatality_subset <- subset(landslide_data,
+                          !is.na(fatality_count) & fatality_count > 0)
+summary(fatality_subset$fatality_count)
+```
+
+Now that makes more sense! Now ill complete a histogram with the new subset to
+see how the data is spread out.
+
+```{r echo=FALSE, warning=FALSE}
+# Create a vector of fatality count
+p1 = ggplot(fatality_subset,aes(x=fatality_count))+
+  geom_histogram(bins = 100)+
+  ggtitle("Fatality count")+
+  xlim(c(0,100))+
+  xlab("Fatalities")+
+  ylab("Count")
+
+# Create vector of fatality count on log10 scale
+p2 = ggplot(fatality_subset,aes(x=fatality_count))+
+  geom_histogram(bins = 100)+
+  scale_x_log10(breaks = c(seq(1,7,2),10, 100, 1000))+
+  ggtitle("Fatality count on log10 scale")+
+  xlab("Fatalities")+
+  ylab("Count")
+
+# Use the GridExtra library to arrange the two plots
+grid.arrange(p1,p2)
+```
+
+So, it seems that the fatalities are quite low. Lets explore the injury count
+and if it has a correlation with fatality count? Here ill remove all zero
+values and also all NA values from my new subset.
+```{r echo=FALSE, warning=FALSE}
+# Create the injury_subset dataframe which creates a dataframe that removes
+# all injury values of Zero and NA
+injury_subset <- subset(landslide_data,!is.na(injury_count) & injury_count > 0)
+
+# Create a vector of injury count
+p3 = ggplot(injury_subset,aes(x=injury_count))+
+  geom_histogram(bins = 100)+
+  ggtitle("Injury count")+
+  xlim(c(0,100))+
+  xlab("Injuries")+
+  ylab("Count")
+
+# Create vector of injury count on log10 scale
+p4 = ggplot(injury_subset,aes(x=injury_count))+
+  geom_histogram(bins = 100)+
+  scale_x_log10(breaks = c(seq(1,7,2),10, 100))+
+  ggtitle("Injury count on log10 scale")+
+  xlab("Injuries")+
+  ylab("Count")
+
+# Use the GridExtra library to arrange the two plots
+grid.arrange(p3,p4)
+```
+
+Great now what about the administrative division population?
+
+```{r echo=FALSE, warning=FALSE}
+# Create density plot
+ggplot(landslide_data,aes(admin_division_population))+
+  geom_density()+
+  theme(axis.text.x=element_text(angle=45, hjust=1))+
+  ggtitle("Number of events per admin_division_population")+
+  xlab("admin_division_population")+
+  ylab("Count")+
+  scale_x_log10()
+```
+
+Interesting so most events occur when the administrative division population is
+around 10000, ill explore more of this later on. 
+
+Now lets inspect when landslides may occur! To do this I extract the date from
+the event_date variable.
+
+```{r echo=FALSE, warning=FALSE}
+# This below block addresses the landslide_data dataframe
+# Extract the year, month and day from the event_date column
+landslide_data$new_date <- as.Date(landslide_data$event_date,"%m/%d/%Y")
+# Make new column for the year of the mass movement
+landslide_data$year <- factor(format(landslide_data$new_date, "%Y"))
+# Make new column for the month of the mass movement
+landslide_data$month <- factor(format(landslide_data$new_date, "%m"))
+
+# This below block addresses the fatality_subset dataframe
+# Extract the year, month and day from the event_date column
+fatality_subset$new_date <- as.Date(fatality_subset$event_date,"%m/%d/%Y")
+# Make new column for the year of the mass movement
+fatality_subset$year <- factor(format(fatality_subset$new_date, "%Y"))
+# Make new column for the month of the mass movement
+fatality_subset$month <- factor(format(fatality_subset$new_date, "%m"))
+```
+
+```{r echo=FALSE, warning=FALSE}
+# Create vector to see the mass movement events per year
+p5 = ggplot(landslide_data,aes(year))+
+  geom_bar()+
+  ggtitle("Number of events per year")+
+  xlab("Year")+
+  ylab("Count")
+
+# Create vector to see the mass movement events per month
+p6 = ggplot(landslide_data,aes(month))+
+  geom_bar()+
+  ggtitle("Number of events per month")+
+  xlab("Month")+
+  ylab("Count")
+
+# Use the GridExtra library to arrange the plots
+grid.arrange(p5,p6)
+```
+
+So there is a slight rise in the number of events in the middle of the year
+compared to other months. Meanwhile I expected that most events would be
+recorded in 2016 or 2017 as the number of people reporting mass movements
+increases, but apparently there has been some sort of flattening in reported
+mass movements since 2013.
+
+Now I want to investigate events where there are fatalities!
+
+```{r echo=FALSE, warning=FALSE}
+# Create vector on fatal mass movements per year
+p7 = ggplot(fatality_subset,aes(year))+
+  geom_bar()+
+  ggtitle("Number of fatal events per year")+
+  xlab("Year")+
+  ylab("Count")
+
+# Create vector on fatal mass movements per month
+p8 = ggplot(fatality_subset,aes(month))+
+  geom_bar()+
+  ggtitle("Number of fatal events per month")+
+  xlab("Month")+
+  ylab("Count")
+
+# Use the GridExtra library to arrange the plots
+grid.arrange(p7,p8)
+```
+
+Now this is interesting! Summer months in the northern hemisphere or winter in
+the southern hemisphere have the most number of deadly events. Meanwhile the
+amount of fatal events per year have stayed mostly confusing. Maybe see when the
+most deadly events occurred.
+
+```{r echo=FALSE, warning=FALSE}
+# Subset the fatality_subset dataframe by the 1% most deadly mass movements
+df.most_deadly <- subset(fatality_subset,
+                         fatality_count > quantile(fatality_count,0.99))
+# Plot the count of the most deadly mass movements per year
+ggplot(df.most_deadly, aes(year))+
+  geom_bar()+
+  ggtitle("Number of 1% most fatal events per year")+
+  xlab("Year")+
+  ylab("Count")
+```
+
+OK, so 2010 was the year with the most 1% deadly mass movements. Why is this,
+because of landslide size maybe? I can see that ill explore more of this later.
+
+Now what do some of the other categorical variables look like?
+
+```{r echo=FALSE, warning=FALSE}
+# Create bar graph
+ggplot(landslide_data,aes(landslide_size))+
+  geom_bar()+
+  theme(axis.text.x=element_text(angle=45, hjust=1))+
+  ggtitle("Number of events per landslide size")+
+  xlab("Size")+
+  ylab("Count")
+```
+
+```{r echo=FALSE, warning=FALSE}
+# Create bar graph
+ggplot(landslide_data,aes(landslide_trigger))+
+  geom_bar()+
+  theme(axis.text.x=element_text(angle=45, hjust=1))+
+  ggtitle("Number of events per landslide triggers")+
+  xlab("Trigger")+
+  ylab("Count")
+```
+
+```{r echo=FALSE, warning=FALSE}
+# Create bar graph
+ggplot(landslide_data,aes(landslide_setting))+
+  geom_bar()+
+  theme(axis.text.x=element_text(angle=45, hjust=1))+
+  ggtitle("Number of events per landslide setting")+
+  xlab("Setting")+
+  ylab("Count")
+```
+
+```{r echo=FALSE, warning=FALSE}
+# Create bar graph
+ggplot(landslide_data,aes(landslide_category))+
+  geom_bar()+
+  theme(axis.text.x=element_text(angle=45, hjust=1))+
+  ggtitle("Number of events per landslide category")+
+  xlab("Category")+
+  ylab("Count")
+```
+
+OK great, so medium sized landslides are the most frequent, but what does that
+even mean, I don't know how big a medium sized landslide is... ill want to plot
+how many fatalities occur in the different types of landslide sizes to identify
+what this exactly means. Addressing landslide triggers, downpour, rain and
+continuous rain seem to be most frequent triggers, they all involve moisture
+and the distinction between each trigger category is quite confusing as they are
+all pretty much the same. Furthermore landslides above roads are the most
+frequent and the most occurring mass movements are landslides and mudslides.
+
+Where did the number of mass movements increase?
+
+```{r echo=FALSE, warning=FALSE}
+# Bar graph of mass movement events per country
+ggplot(landslide_data,aes(x=country_name))+
+  geom_bar()+
+  theme(axis.text.x=element_text(angle=45, hjust=1))
+```
+
+Hmm obviously that would happen, ill only include countries with 100 or more
+landslides.
+
+```{r echo=FALSE, warning=FALSE}
+# Select the countries with 100 or more mass movement events
+new.landslides <- table(landslide_data$country_name)[as.vector(table(landslide_data$country_name)) > 99]
+# Create a dataframe to select only the countries with 100 or more mass 
+# movement events
+many.landslides <- subset(landslide_data,
+                          landslide_data$country_name %in% names(new.landslides) & landslide_data$country_name != "")
+
+# Create the bargraph for countries with more than 100 mass movement events
+ggplot(many.landslides, aes(x=country_name))+
+  geom_bar()+
+  theme(axis.text.x=element_text(angle=45, hjust=1))
+```
+
+So the US has the most landslide, followed by India and the Philippines
+
+I just got the idea of using the storm_name variable to see which storms caused
+the most landslides. Also I want to see only storms with more than 5 resultant
+landslides.
+
+```{r echo=FALSE, warning=FALSE}
+# Select the storms with more than 5 mass movement events
+big.storms <- table(landslide_data$storm_name)[as.vector(table(landslide_data$storm_name)) > 4]
+# Create a dataframe to select only the storms with more than 5 mass 
+# movement events
+frequent.storms <- subset(landslide_data,
+                          landslide_data$storm_name %in% names(big.storms) & storm_name != "" & storm_name != "0")
+# Create bar graph
+ggplot(frequent.storms,aes(storm_name))+
+  geom_bar()+
+  theme(axis.text.x=element_text(angle=45, hjust=1))+
+  ggtitle("Number of events per storm")+
+  xlab("Storm")+
+  ylab("Count")
+```
+
+This gets me to the idea of maybe extracting the beginning of each storm name
+to count the events of a typhoon, hurricane, and tropical storm/cyclone. I think
+I have to use regular expressions for this...
+
+This graph uses all mass movement events
+
+```{r echo=FALSE,warning=FALSE}
+# Make a new column containing the type of storm, this is done by extracting the
+# first word from the storm_name variable
+landslide_data$storm_type <- word(landslide_data$storm_name,1)
+# Rename the Tropical value to another name
+landslide_data$storm_type[landslide_data$storm_type =='Tropical'] <- 'Tropical Storm or Tropical Cyclone'
+
+# Plot the bar graph
+ggplot(subset(landslide_data,storm_type == c('Hurricane','Typhoon','Supertyphoon','Tropical Storm or Tropical Cyclone')),aes(storm_type))+
+  geom_bar()+
+  ggtitle("Number of mass movements for each type of storm")
+```
+
+While this graph uses only events where fatalities occurred
+
+```{r echo=FALSE,warning=FALSE}
+# Make a new column containing the type of storm, this is done by extracting the
+# first word from the storm_name variable
+fatality_subset$storm_type <- word(fatality_subset$storm_name,1)
+# Rename the Tropical value to another name
+fatality_subset$storm_type[fatality_subset$storm_type =='Tropical'] <- 'Tropical Storm or Tropical Cyclone'
+
+# Plot the bar graph
+ggplot(subset(fatality_subset,storm_type == c('Hurricane','Typhoon','Supertyphoon','Tropical Storm or Tropical Cyclone')),aes(storm_type))+
+  geom_bar()+
+  ggtitle("Number of mass movements for each type of deadly storm")
+```
+
+Aha! So while Tropical Storms/Cyclones create the most mass movement events,
+Typhoons which occur in the West Pacific, seem to create most 
+of the fatal landslides.
+
+Also, I can still explore the latitude variable...
+
+```{r echo=FALSE, warning=FALSE}
+# Create density plot
+ggplot(landslide_data,aes(latitude))+
+  geom_density()+
+  theme(axis.text.x=element_text(angle=45, hjust=1))+
+  ggtitle("Number of events per Latitude")
+```
+
+```{r echo=FALSE, warning=FALSE}
+# Create density plot
+ggplot(landslide_data,aes(latitude))+
+  geom_density()+
+  theme(axis.text.x=element_text(angle=45, hjust=1))+
+  ggtitle("Number of events per Latitude")+
+  geom_vline(aes(xintercept = 0),colour='red',linetype=1)+
+  geom_vline(aes(xintercept = 23),colour='red',linetype=2)+
+  geom_vline(aes(xintercept = -23),colour='red',linetype=2)+
+  geom_text(aes(x=0, label="Equator", y = 0.04))+
+  geom_text(aes(x=27, label="Tropic of Cancer", y = 0.04))+
+  geom_text(aes(x=-27, label="Tropic of Capricorn", y = 0.04))
+```
+
+Very interesting, so there are almost no mass movement in the Southern
+Hemisphere compared to the Northern Hemisphere. I'm sure I can explore this
+more in the next sections and see how latitude might correlate to fatalities or
+something like that.
+
+# Univariate Analysis
+
+### What is the structure of your dataset?
+The data set has three important numerical variables: fatality_count, 
+injury_count and admin_division_population. There are also numerous factors
+such as landslide_size, landslide_trigger and country_name. However none of
+these factors are ordered.
+
+Through multiple univariate plots I observed that:
+* The most frequent month for mass movement is July, while most fatal mass 
+  movements occur in August.
+* Most mass movements occurred in 2010.
+* The US boasts the most mass movement events.
+* 75% of the data has a fatality rate below 1.
+* The Maximum fatality count is 5000 whilst the maximum injury count is at 374.
+* Medium sized mass movement is the most common
+* Most mass movement occurs between 25 and 50 degrees north of the equator
+* Landslides are the most common mass movement
+* Typhoons result in most of the deadly mass mass movements as a result of
+  storms.
+
+### What is/are the main feature(s) of interest in your dataset?
+
+The fatality_count, landslide_size, year and month variables are the most 
+interesting. I can use these can use these to create further plots later on.
+
+### What other features in the dataset do you think will help support your \
+investigation into your feature(s) of interest?
+
+I can see that the latitude and injury_count variables might come into play 
+later in some regression models.
+### Did you create any new variables from existing variables in the dataset?
+
+I created the year and month discrete variables, which were extracted from the 
+event_date time stamp in the original data.
+
+I also created the storm_type variable which extracts the first word from the 
+storm_name variable. But frustratingly many of the storm_name values do not have
+a first name that correspond with the type of storm. For example the name of a 
+storm might be "Haiyan" instead of "Typhoon Haiyan".
+
+### Of the features you investigated, were there any unusual distributions? \
+Did you perform any operations on the data to tidy, adjust, or change the form \
+of the data? If so, why did you do this?
+
+The deadly mass movements per year plot looked quite unusual, with events
+peaking in 2010 after previously quite few deadly mass movements. To
+investigate I plotted only the 1% most deadly mass movements and this revealed
+that this might be due to the a spike in deadly events in 2010.
+
+I also plotted injury and fatality count on a log10 scale, as the data was
+skewed to the right.
+
+# Bivariate Plots Section
+
+First, lets see how injury_count and fatality_count relate.
+
+```{r echo=FALSE, warning=FALSE}
+# Create scatter plot with smoothed line
+ggplot(landslide_data,aes(fatality_count,injury_count))+
+  geom_jitter(aes(alpha=1/10))+
+  geom_smooth(method = 'gam', formula = y ~ s(x, bs = "cs"))
+```
+
+So now on to the correlation between injury and fatalities
+```{r echo=FALSE, warning=FALSE}
+# Calculate the correlation between injuries and fatalities
+cor.test(landslide_data$fatality_count,landslide_data$injury_count)
+```
+
+Hmm seems as the correlation here is low. So I guess I was wrong assuming that
+there is much correlation. However after around 1000 deaths, the data starts
+getting inaccurate and there are far to few values and wide spaced outliers,
+so what is the correlation of this with a fatality count below 1000?
+
+```{r echo=FALSE, warning=FALSE}
+# Create vector to exclude all fatality counts below 1000
+fi.cor <- subset(fatality_subset,fatality_count<1000)
+# Calculate the correlation between injuries and fatalities
+cor.test(fi.cor$fatality_count,fi.cor$injury_count)
+```
+
+Now this looks better! This does tell us that the injury and fatality count is
+somewhat correlated, at least when not influenced by outliers. 
+
+Can we use the newly created vector fi_cor to make a statistical model
+predicting fatalities given the injuries.
+
+```{r echo=FALSE, warning=FALSE}
+# Create linear regression model
+summary(lm(data=fi.cor, fatality_count~injury_count))
+```
+
+Well that says that for every injury accounted for, there are 0.72 deaths.
+Meaning that there are roughly 18 deaths for 25 injuries.
+
+Now what about fatalities varying over time? I saw earlier how the count of
+landslides changed over the different years and months, but how do the
+fatalities vary over these periods?
+
+```{r echo=FALSE, warning=FALSE}
+# Create vector to see the mass movement events per year
+p9 = ggplot(fatality_subset,aes(year,fatality_count))+
+  geom_bar(stat='identity',color='red',fill='red')+
+  ggtitle("Number of deaths per year")+
+  xlab("Year")+
+  ylab("Fatalities")
+
+# Create vector to see the mass movement events per month
+p10 = ggplot(fatality_subset,aes(month,fatality_count,colour='red',fill='red'))+
+  geom_bar(stat='identity',color='red',fill='red')+
+  ggtitle("Number of deaths per month")+
+  xlab("Month")+
+  ylab("Fatalities")
+
+# Use the GridExtra library to arrange the plots
+grid.arrange(p9,p10)
+```
+
+The number of deaths peaks in 2013, which is interesting as most mass movements
+occurred in 2010, ill want to explore more of this... I was wrong assuming that
+fatalities peaked in August when I first analysed the count of mass movement for
+each month. Instead the fatalities peak in June and then peak again in August,
+giving the graph a bi modal form.
+
+
+OK, from the univariate analysis I saw that of 1% most deadly mass movements,
+6 occur in 2010. Lets see how many deaths each of these 1% most deadly mass
+movements claimed. This might also help us explain why the fatalities peaked in
+2013...
+
+```{r echo=FALSE, warning=FALSE}
+# Plot Fatalities per year for the 1% most deadly events
+ggplot(df.most_deadly, aes(x=year,y=fatality_count))+
+  geom_bar(stat="identity", colour = 'white')+
+  ggtitle("Fatalities per year for the 1% most deadly events")+
+  xlab("Year")+
+  ylab("Fatalities")
+```
+
+Wow, OK this gives us some insight. 2010 might have been the year with the  most
+fatal landslides, but it certainly has not resulted in the most deaths. This
+explains why 2013 has the highest most fatalities, this is because it hosts the
+single most fatal event, leading to the loss of about 5000 lives. 2014 also
+harbored a major deadly event which claimed the lives of around 2000 people.
+
+We also explored administrative division population earlier on, is there a
+correlation between fatality count and administrative division population? I
+want to exclude populations below 1000.
+
+```{r echo=FALSE, warning=FALSE}
+# Create scatterplot with smoothed line
+ggplot(subset(fatality_subset,admin_division_population > 1000 & fatality_count < 1000),aes(x=admin_division_population,y=fatality_count))+
+  geom_point(aes(alpha=1/20))+
+  ggtitle("Number of fatlities against admin_division_population")+
+  geom_smooth(method = 'gam', formula = y ~ s(x, bs = "cs"))+
+  scale_x_log10()+
+  scale_y_log10()
+```
+
+OK, so it looks like there is almost no correlation between these to variables.
+
+What are the average and median fatalities per landslide type?
+
+```{r echo=FALSE, warning=FALSE}
+# Subset that excludes categories with only a few values
+removed.categories <- subset(fatality_subset,landslide_category != "unknown" 
+                                  & landslide_category != "other" 
+                                  & landslide_category != "" 
+                                  & landslide_category != "lahar" 
+                                  & landslide_category != "earth_flow" 
+                                  & landslide_category != "riverbank_collapse")
+
+# Scatter graph fatality count per landslide category, points indicating mean
+# and median are also included
+ggplot(removed.categories,
+       aes(x=landslide_category,y=fatality_count))+
+  geom_point(alpha=1/2,
+             color="light green",
+             position = position_jitter(height = 0))+
+  geom_point(stat="summary", fun.y = mean, aes(colour = "mean"))+
+  ggtitle("landslide category against fatalities")+
+  geom_point(stat="summary", fun.y = median, aes (colour = "median"))+
+  theme(axis.text.x=element_text(angle=45, hjust=1))+
+  coord_cartesian(ylim = c(0,100))
+```
+
+```{r echo=FALSE, warning=FALSE}
+# Table the data
+table(fatality_subset$landslide_category)
+```
+
+
+What was I thinking, I should have used a box plot... (Here the mean of debris
+flow is extending past my maximum y limit)
+
+```{r echo=FALSE, warning=FALSE}
+# Create boxplot of fatality counts per landslide category
+ggplot(removed.categories,
+       aes(x=landslide_category,y=fatality_count))+
+  geom_boxplot(alpha=1/2)+
+  ggtitle("landslide category against fatalities")+
+  coord_cartesian(ylim = c(0,100))
+```
+
+Great stuff... so looks like of my chosen categories, snow avalanches are the
+most deadly by median fatalities, whilst as known from the plot before, debris
+flow has the highest mean fatality rate.
+
+So now I'll look back at the countries with more than 100 mass movement events
+and see which countries have the most fatalities.
+
+```{r echo=FALSE, warning=FALSE}
+# Now create a similar dataframe to many.landslides, just this time with the
+# fatality_subset dataframe
+many.fatal.landslides <- subset(fatality_subset, fatality_subset$country_name %in% names(new.landslides) & fatality_subset$country_name != "")
+
+# Plot a bar graph of fatality counts for the countries with more than 100 mass
+# movement events, coloured by the landslide category
+ggplot(many.fatal.landslides,aes(x=country_name,y=fatality_count))+
+  geom_bar(stat = "identity",fill='blue',color='blue')+
+  ggtitle("country name against fatalities")+
+  theme(axis.text.x=element_text(angle=45, hjust=1))
+```
+
+So despite the fact that the US had the most mass movement events, India, China
+and the Philippines seem to have the most fatalities. In fact most less
+economically developed in this graph show extremely large fatality counts
+compared to more economically developed countries.
+
+To see where deadly events occur better, I can split the latitude values into
+northern and southern hemisphere.
+
+```{r echo=FALSE, warning=FALSE}
+# Create new variable that determines the hemisphere of the mass movement
+fatality_subset$hemisphere <- as.character(cut(fatality_subset$latitude,
+                                      breaks=c(-50,0,75),
+                                      labels = c("Southern Hemisphere","Northern Hemisphere")))
+
+# Create boxplot
+ggplot(fatality_subset,aes(hemisphere,fatality_count))+
+  geom_boxplot(aes(alpha=1/10))+
+  ggtitle("Number of fatalities per Hemisphere")+
+  coord_cartesian(ylim = c(0,50))
+```
+
+Summary of each hemisphere:
+
+```{r echo=FALSE, warning=FALSE}
+by(fatality_subset$fatality_count,fatality_subset$hemisphere,summary)
+```
+
+Records of mass movements with fatalities:
+
+```{r echo=FALSE, warning=FALSE}
+table(fatality_subset$hemisphere)
+```
+
+```{r echo=FALSE, warning=FALSE}
+# Create scatterplot
+ggplot(fatality_subset,aes(hemisphere,fatality_count))+
+  geom_jitter(aes(alpha=1/10))+
+  ggtitle("Number of fatalities per Hemisphere")+
+  scale_y_sqrt()
+```
+
+Hmm, we can also use both the latitude and longitude values to make a scatter plot
+of the mass movement events.
+
+```{r echo=FALSE, warning=FALSE}
+# Create scatterplot
+ggplot(landslide_data,aes(x=longitude,y=latitude))+
+  geom_point(aes(alpha=1/20))+
+  ggtitle("Number of events")+
+  theme_bw()
+```
+
+That isn't very clear... I'll want to create a proper map of this later on. But
+we can see that mass movements are mainly concentrated in East Asia and North
+America.
+
+I now want to go on to analyse how the other categorical variables
+
+```{r echo=FALSE, warning=FALSE}
+# Create column graph
+ggplot(fatality_subset,aes(landslide_category,fatality_count))+
+  geom_col()+
+  ggtitle("Number of fatalities events per landslide category")+
+  theme(axis.text.x=element_text(angle=45, hjust=1))
+```
+
+So it looks like landslide and mudslide events lead to most deaths, this is due
+to many deadly events. Meanwhile debris flow is also deadly however this is as
+a result of one very deadly event.
+
+```{r echo=FALSE, warning=FALSE}
+# Create column graph
+ggplot(fatality_subset,aes(landslide_trigger,fatality_count))+
+  geom_col()+
+  ggtitle("Number of fataities per landslide trigger")+
+  theme(axis.text.x=element_text(angle=45, hjust=1))
+```
+
+Just as we saw in univariate plots with the
+amount of mass movements, the effects of moisture (downpour, rain, etc.) lead to
+most deaths.
+
+```{r echo=FALSE, warning=FALSE}
+# Create column graph
+ggplot(fatality_subset,aes(landslide_size,fatality_count))+
+  geom_col()+
+  ggtitle("Number of fatalities per landslide size")+
+  theme(axis.text.x=element_text(angle=45, hjust=1))
+```
+
+```{r echo=FALSE, warning=FALSE}
+by(fatality_subset$fatality_count,fatality_subset$landslide_size,summary)
+```
+
+I  questioned what the mass movement sizes actually mean in the univariate
+analysis, so looking at my summary and plot, it looks like it depends on the
+median deaths. The plot also shows us that the very_large mass movements are
+most deadly, followed by medium and large sized mass movements.
+
+```{r echo=FALSE, warning=FALSE}
+# Create column graph
+ggplot(fatality_subset,aes(landslide_setting,fatality_count))+
+  geom_col()+
+  ggtitle("Number of fatal events per landslide setting")+
+  theme(axis.text.x=element_text(angle=45, hjust=1))
+```
+
+Now I want to quickly also analyse how the storm types vary in causing mass
+movement deaths
+
+```{r echo=FALSE, warning=FALSE}
+# Create boxplot
+ggplot(subset(fatality_subset,
+              storm_type == c('Hurricane',
+                              'Typhoon',
+                              'Supertyphoon',
+                              'Tropical Storm or Tropical Cyclone')),
+       aes(storm_type,fatality_count))+
+  geom_boxplot()+
+  ggtitle("Deaths for each type of deadly storm")
+```
+
+Well, this isn't too surprising, hurricanes normally impact quite developed
+nations such as the US in the North-West Atlantic. Meanwhile cyclones and
+typhoons mostly impact less developed nations, explaining the fatality
+deviations quite well.
+
+# Bivariate Analysis
+
+### Talk about some of the relationships you observed in this part of the \
+investigation. How did the feature(s) of interest vary with other features in \
+the data set?
+
+* The number of deaths peaks in 2013, which is interesting as this contrasts 
+  with my previous finding that most deadly mass movements occurred in 2010. The
+  reason for the number of deaths peaking in 2013 is due to a single event
+  which killed 5000 people.
+* Using a linear regression model I found that for every injury, there are 0.27
+  deaths. This means that there is roughly one death for four injuries.
+* Rock falls have the lowest median fatality count whilst debris flow has the
+  highest mean fatality count. The reason for this is the outlier with 5000
+  deaths which skewed the data. 
+* The most common deadly mass movement are landslides with 1817 reports, 
+  followed by mudslides with 408 reports.
+* Among the countries with most mass movement events, China and India have the 
+  most deaths. Most less economically developed countries show extremely large 
+  fatality counts compared to more economically developed countries.
+* There are much more mass movements in the northern hemisphere than in it's
+  southern counterpart. However the Southern Hemisphere has a higher median
+  fatality count of 4 compared to that of the northern hemisphere which is 3.
+* Using latitude and longitude I found that mass movements are mainly
+  concentrated in East Asia and North America.
+* Landslide and mudslide events lead to most deaths, due to many deadly events.
+  Meanwhile debris flow is also a factor leading to many deaths however this is
+  as because of only one very deadly event.
+* Mass movement size depends on the median deaths. Catastrophic landslides have
+  the highest median value of 103 deaths whilst small landslides only have a
+  median fatality count of 1.
+* Typhoons lead to the highest median deaths among mass movements caused by 
+  storms, followed by Tropical storms and Hurricanes.
+
+### Did you observe any interesting relationships between the other features \
+(not the main feature(s) of interest)?
+Injury and fatality are somewhat correlated, this should make sense. However the
+injuries only explain about 28% of the variance in fatalities. Surprisingly,
+administrative division population had  absolutely no correlation with the 
+number of deaths. There is also a a surprising relationship between the size of
+mass movement and the fatality count. The higher the fatality count, the larger
+the mass movement.
+
+### What was the strongest relationship you found?
+The relationship between injury and fatality count was obviously the strongest.
+However due to outliers and many NA values, the relationship has become quite
+complicated.
+
+# Multivariate Plots Section
+
+So earlier on, we were looking at the fatalities for the 1% most deadly mass
+movements, lets continue exploring this. What were these events, what were they
+were triggered by and where did they occur.
+
+```{r echo=FALSE, warning=FALSE}
+# Plot Fatalities per year for the 1% most deadly events and fill the colour 
+# by the landslide category
+ggplot(df.most_deadly, aes(x=year,y=fatality_count,fill=landslide_category))+
+  geom_bar(stat="identity")+
+  ggtitle("Fatalities per year for the 1% most deadly events")+
+  xlab("Year")+
+  ylab("Fatalities")
+```
+
+```{r echo=FALSE, warning=FALSE}
+# Plot Fatalities per year for the 1% most deadly events and fill the colour 
+# by the landslide trigger
+ggplot(df.most_deadly, aes(x=year,y=fatality_count,fill=landslide_trigger))+
+  geom_bar(stat="identity")+
+  ggtitle("Fatalities per year for the 1% most deadly events")+
+  xlab("Year")+
+  ylab("Fatalities")
+```
+
+```{r echo=FALSE, warning=FALSE}
+# Plot Fatalities per year for the 1% most deadly events and fill the colour 
+# by the affected country
+ggplot(df.most_deadly, aes(x=year,y=fatality_count,fill=country_name))+
+  geom_bar(stat="identity")+
+  ggtitle("Fatalities per year for the 1% most deadly events")+
+  xlab("Year")+
+  ylab("Fatalities")
+```
+
+Interesting, so these top 1% deadly events occur mainly through debris flows and
+landslide. Also the main triggers for the most deadly seem to be do to heavy
+downpours and continuous rain. Seismic activities or large scale atmospheric
+disturbances such as tropical cyclones and monsoon rainfall appear to have a
+lesser effect. Also the most deadly mass movements seem to be spread around the
+world quite a lot. The 2013 events is unsurprisingly one in India, I was thinking
+that it might be in China or India. However I must say that most deadly events
+occur in Asia, especially areas in the subtropics and tropics.
+
+Now, how have fatalities altered over the years, this time plotted on a
+frequency polygon?
+
+```{r echo=FALSE, warning=FALSE}
+# Fatality values versus count, with line colour being the years
+ggplot(fatality_subset, aes(x=fatality_count, color=year))+
+  geom_freqpoly(binwidth=1)+
+  ggtitle("Fatality values versus count")+
+  xlab("Fatalities")+
+  ylab("Count")+
+  xlim(c(0,30))
+```
+
+Well that doesn't reveal anything... so let me see if something changes if I
+group the dates into more broad timescales!
+
+```{r echo=FALSE, warning=FALSE}
+# Make the year variable a integer so that I can cut it
+fatality_subset$year <- as.numeric(as.character(fatality_subset$year))
+# Now create a charachter variable, otherwise the colour in the graph wont work
+data.grouped_year <- as.character(cut(fatality_subset$year,
+                                      breaks=c(2003,2007,2010,2013,2017)))
+
+# Plot the graph of fatality values with years broken into segments
+ggplot(subset(fatality_subset, !is.na(data.grouped_year)),
+       aes(fatality_count, colour=data.grouped_year))+
+  geom_freqpoly(binwidth=1)+
+  ggtitle("Fatalities each year")+
+  xlab("Fatalities")+
+  ylab("Count")+
+  xlim(c(0,30))
+```
+
+Oh wow! That already says a lot! So has mass movement increased in frequency
+over recent years or have population densities in vulnerable areas increased or
+maybe have just more fatalities been reported?
+
+In the very beginning I saw that deadly mass movements increase in frequency
+during June, July and August. I assumed it was due to the Monsoon season in the
+northern hemisphere, but was this assumption correct?
+
+```{r echo=FALSE, warning=FALSE}
+# Bar graph of month, coloured by hemisphere
+ggplot(fatality_subset,aes(month))+
+  geom_bar(aes(fill=hemisphere))+
+  ggtitle("Number of fatal events per month")+
+  xlab("Month")+
+  ylab("Count")
+```
+
+Yes. seems like that assumption was correct. The northern hemisphere does
+experience more deadly mass movement in its summer months.
+
+I want to go more in depth with the two most occurring mass movement categories.
+Over the years, how have landslides and mudslides changed? Has their occurrence
+increased, have the deaths increased? In what months do these events occur and
+in which countries?
+
+```{r echo=FALSE, warning=FALSE}
+# Create a variable which turns time scale into a continous variable
+fatality_subset$time_of_year <- 
+  as.numeric(fatality_subset$year) + (as.integer(fatality_subset$month)/12)
+
+# Plot the scatter graph of fatalities over time, using only mudslide and
+# landslide mass movements
+ggplot(subset(fatality_subset,
+              landslide_category == c("mudslide","landslide")),
+       aes(x=time_of_year,
+           y=fatality_count,
+           colour=landslide_category))+
+  geom_point(alpha =1/2, position = position_jitter(height = 0))+
+  ggtitle("Fatalities over time")+
+  scale_y_log10()+
+  facet_grid(rows = vars(landslide_category))+
+  geom_line(stat="summary", fun.y = mean, color ='black')+
+  geom_smooth(formula = y~x, color = 'blue', linetype = 2, method = 'loess')
+```
+
+Smoothing the plot reveals that landslides have become less deadly since 2007 by
+almost half. Meanwhile mudslide deaths peaked in 2007 then fell considerably
+from 2015 to present day.
+
+So we now know that fatalities have changed, but how have the number of
+landslides changed?
+
+```{r echo=FALSE, warning=FALSE}
+# Create a variable which turns the time scale into a continous variable, this
+# time with the landslide_data dataframe opposed to using the fatality_subset
+# dataframe before
+landslide_data$time_of_year <- as.numeric(as.character(landslide_data$year)) + (as.integer(landslide_data$month)/12)
+
+# Group and summarise the variables to get the number of events
+grouped_landslide_top <- group_by(subset(landslide_data,
+                                  !is.na(landslide_category)),
+                                  time_of_year,
+                                  landslide_category)
+landslide_data.two_slides <- summarise(grouped_landslide_top, 
+                                 n=n())
+
+# Plot the scatter graph of events over time, using only mudslide and
+# landslide mass movements, and limit the timescale to that from the above plots
+ggplot(subset(landslide_data.two_slides,
+              landslide_category == c("mudslide","landslide")),
+       aes(x=time_of_year,
+           y=n ,
+           colour=landslide_category))+
+  geom_point(alpha =1/2, position = position_jitter(height = 0))+
+  ggtitle("Events over time")+
+  facet_grid(rows = vars(landslide_category))+
+  geom_line(stat="summary", fun.y = mean, color ='black')+
+  geom_smooth(formula = y~x, color = 'blue', linetype = 2, method = 'loess')
+```
+
+Now this is very interesting! The data shows that while the number of these two
+mass movements has increased, the deaths in of these have decreased since 2007
+as shown in the previous plots.
+
+Expanding onto what I saw in the bi variate plots section, where I identified
+that medium sized mass movements are the only the second most deadly after very
+large mass movements Is this also true for mass movements which claim less
+lives?
+
+```{r echo=FALSE, warning=FALSE}
+# Create vector on fatality counts colored by landslide size, using bin size 10
+p11 = ggplot(fatality_subset,aes(x=fatality_count, colour=landslide_size))+
+  geom_freqpoly(bins=10)+
+  ggtitle("Fatality count by bin count of 10")+
+  xlab("Fatalities")+
+  ylab("Count")+
+  xlim(c(0,30))
+
+# Create vector on fatality counts colored by landslide size, using bin size 30
+p12 = ggplot(fatality_subset,aes(x=fatality_count, colour=landslide_size))+
+  geom_freqpoly(bins=30)+
+  ggtitle("Fatality count by bin count of 30")+
+  xlab("Fatalities")+
+  ylab("Count")+
+  xlim(c(0,30))
+
+# Use the GridExtra library to arrange the two plots
+grid.arrange(p11,p12)
+```
+
+So it looks like medium sized landslides are the major killer among the less
+deadly mass movements.
+
+For countries having more than 100 mass movement events, what are their most
+frequent and most deadly mass movements?
+
+```{r echo=FALSE, warning=FALSE}
+# Using the same dataframe as above, create the same bargraph with landslide
+# category as the colour
+ggplot(many.landslides, aes(x=country_name, fill=landslide_category))+
+  geom_bar()+
+  ggtitle("Number of landslides for each country")+
+  theme(axis.text.x=element_text(angle=45, hjust=1))
+```
+
+Nice, so landslides tend to occur as the major category in all of these
+countries, the US also seems to have a sizable amount of mudslides. Now how do
+the fatalities from mass movements compare?
+
+```{r echo=FALSE, warning=FALSE}
+# Now create a similar dataframe to many.landslides, just this time with the
+# fatality_subset dataframe
+many.fatal.landslides <- subset(fatality_subset, fatality_subset$country_name %in% names(new.landslides) & fatality_subset$country_name != "")
+
+# Plot a bar graph of fatality counts for the countries with more than 100 mass
+# movement events, coloured by the landslide category
+ggplot(many.fatal.landslides,aes(x=country_name,y=fatality_count,fill=landslide_category,colour=landslide_category))+
+  geom_bar(stat = "identity")+
+  ggtitle("Number of landslides for each country")+
+  theme(axis.text.x=element_text(angle=45, hjust=1))
+```
+
+Looks like the most deadly mass movement category in India was a single debris
+flow event, overall it seems like landslide was the biggest killer in most of
+these countries though.
+
+Now I want to see the mass movement in all countries, to do this I need to
+create maps. But before I start creating proper maps, I want to create maps
+showing the precise locations of mass movement using the latitude and longitude
+variables.
+
+```{r echo=FALSE, warning=FALSE}
+# Create scatterplot
+ggplot(fatality_subset,aes(x=longitude,y=latitude))+
+  geom_point(aes(size=fatality_count))+
+  ggtitle("Number of fatalities")+
+  scale_size_area(max_size=8)+
+  guides(size = guide_legend(override.aes = list(max_size=8)))+
+  theme_bw()
+```
+
+```{r echo=FALSE, warning=FALSE}
+# Create scatterplot
+ggplot(fatality_subset,aes(x=longitude,y=latitude))+
+  geom_point(aes(colour = landslide_size, size = fatality_count))+
+  ggtitle("Number of events")+
+  scale_size_area(max_size=8)+
+  guides(size = guide_legend(override.aes = list(max_size=8)))+
+  theme_bw()
+```
+
+OK, so now I might be getting a bit ambitious but what about plotting all this
+on a proper map? First I need to look how I might do that...
+
+OK, so I got it! Thanks to [THIS](https://brennonborbon.wordpress.com/2017/12/16/creating-simple-world-maps-in-ggplot2/) blog post by Brennon Borbon!
+
+```{r echo=FALSE, warning=FALSE}
+# First make a copy of the country_name variable, now making country names
+# characters instead of a factor levels
+fatality_subset$chr.country <- levels(fatality_subset$country_name)[as.numeric(fatality_subset$country_name)]
+# Exclude all values with "" as the country name
+map_fatality <- subset(fatality_subset,country_name != "")
+# Change names of countries in the data, so that country names will be recognized by the ggplot map_data() function.
+map_fatality <- map_fatality %>% mutate(chr.country = if_else(chr.country == "United States", "USA",
+                                                      if_else(chr.country == "United Kingdom", 'UK',
+                                                      if_else(chr.country == "Myanmar [Burma]", 'Myanmar', chr.country))))
+```
+
+```{r echo= FALSE, warning=FALSE}
+# Here I sum up the total fatalities in each country
+country.fatality <- group_by(map_fatality, chr.country)
+fatality.per.country <- summarise(country.fatality,sum(fatality_count))
+names(fatality.per.country) <- c("Country","Fatalities")
+
+# Now join the fatalties in each country and the country name to the map_data()
+# dataset. We join on the 'region' variable in map_data() and the 'Country' 
+# column in fatality.per.country
+fatality.map <- left_join(map_data('world'),
+                              fatality.per.country,
+                              by = c('region' = 'Country'))
+```
+
+```{r echo=FALSE, warning=FALSE}
+# Finally I can map the fatality rate
+ggplot(fatality.map,aes(x = long, y = lat, group = group))+
+  geom_polygon(aes(fill = Fatalities))+
+  scale_fill_viridis(option = 'plasma')+
+  ggtitle("Map coloured by mass movement fatalities")+
+  theme_bw()
+```
+
+WOW, finally! Notice how the countries with the most fatalities are in Eastern
+and Southern Asia and Latin America also seems to have a fair share. Now that I
+have this, what about changing the code to reflect the number of mass movement
+events and size of these events?
+
+```{r echo=FALSE, warning=FALSE}
+# Here I use the landslide data dataframe instead of fatality_subset as this
+# includes all mass movement events, not just ones where fatalities are recorded
+
+# First make a copy of the country_name and landslide_trigger variables, now
+# making country names and triggers, characters instead of a factor levels
+landslide_data$chr.country <- levels(landslide_data$country_name)[as.numeric(landslide_data$country_name)]
+landslide_data$trigger <- levels(landslide_data$landslide_trigger)[as.numeric(landslide_data$landslide_trigger)]
+# Exclude all values with "" as the country name
+map_landslides <- subset(landslide_data,country_name != "")
+# Change names of countries in the data, so that country names will be
+# recognized by the ggplot map_data() function.
+map_landslides <- map_landslides %>% mutate(chr.country = if_else(chr.country == "United States", "USA",
+                                                                                if_else(chr.country == "United Kingdom", 'UK',
+                                                                                if_else(chr.country == "Myanmar [Burma]", 'Myanmar', chr.country))))
+```
+
+```{r echo=FALSE, warning=FALSE}
+# Here I sum up the total mass movements in each country
+country.events <- group_by(map_landslides, chr.country)
+events.per.country <- summarise(country.events,n())
+names(events.per.country) <- c("Country","Number")
+
+# Now join the events in each country and the country name to the map_data()
+# dataset. We join on the 'region' variable in map_data() and the 'Country'
+# column in events.per.country
+new.events.map <- left_join(map_data('world'), events.per.country, by = c('region' = 'Country'))
+```
+
+```{r echo=FALSE, warning=FALSE}
+# Finally I can map the mass movement events
+ggplot(new.events.map,aes(x = long, y = lat, group = group))+
+  geom_polygon(aes(fill = Number))+
+  scale_fill_viridis(option = 'plasma')+
+  ggtitle("Map coloured by mass movement events")+
+  theme_bw()
+```
+
+Now we can clearly notice that whilst the number of mass movements is lower in
+China, Indonesia and India; the fatality rate is much higher. What about the
+mode of mass movement triggers?
+Here I use a function to calculate the mode. This is courtesy of Ken Williams,
+from [his answer to a question on Stack Overflow](https://stackoverflow.com/questions/2547402/is-there-a-built-in-function-for-finding-the-mode)
+
+```{r echo=FALSE, warning=FALSE}
+# This function is 
+Mode <- function(x) {
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
+# Here I mode of mass movements trigger in each country
+country.trigger <- group_by(map_landslides, chr.country)
+trigger.per.country <- summarise(country.trigger,Mode(trigger))
+names(trigger.per.country) <- c("Country","Trigger")
+# Now join the landslide trigger in each country and the country name to the
+# map_data() dataset. We join on the 'region' variable in map_data() and the
+# 'Country' column in trigger.per.country
+new.trigger.map <- left_join(map_data('world'),
+                             trigger.per.country,
+                             by = c('region' = 'Country'))
+```
+
+```{r echo=FALSE, warning=FALSE}
+# Finally I can map the mass movement trigger
+ggplot(new.trigger.map,aes(x = long, y = lat, group = group))+
+  geom_polygon(aes(fill = Trigger))+
+  scale_fill_viridis_d(na.value = "Grey")+
+  ggtitle("Map coloured by mass movement triggers")+
+  theme_bw()
+```
+
+OK, interesting to see that downpour is the largest result of mass movement,
+nearly everywhere. However in Europe, Afghanistan, Oman, Russia and some other
+countries, rain is the largest trigger. In areas affected by tropical cyclones,
+this is often also the largest trigger, such as in Mexico, Cuba, Madagascar and
+Taiwan.
+
+The last plots I want to do, are heat maps.
+
+```{r echo= FALSE, warning=FALSE}
+# Make landslide_size a ordered factor so that the hatmaps look correct on the
+# y variable
+map_fatality$landslide_size <- factor(map_fatality$landslide_size,
+                                      ordered = TRUE,
+                                      levels = c("small","medium","large","very_large"))
+
+# Group by month and landslide size and summarise this with the sum of fatalities
+month.size <- group_by(map_fatality,month,landslide_size)
+fatality.month.size <- summarise(month.size,sum(fatality_count))
+# Rename Columns
+names(fatality.month.size) <- c("Month","Size","Fatalities")
+# Remove the "unknown" landslide size
+fatality.month.size <- subset(fatality.month.size,Size != "unknown")
+# Ungroup, else it throws this error: "Error in grouped_indices_grouped_df_impl(.data) : Column `month` is unknown"
+fatality.month.size <- ungroup(fatality.month.size,Month,Size,Fatalities)
+```
+
+```{r echo=FALSE, warning=FALSE}
+# Plot Heatmap
+ggplot(data = fatality.month.size, aes(x = Month, y = Size)) +
+  geom_tile(aes(fill = Fatalities))+
+  ggtitle("Heatmap of month versus size shaded by mass movement deaths")
+```
+
+Cool! It makes sense that very large landslides occur from May to August, as
+most deaths are in India and China, where the monsoon season occurs in July
+through to September, and heavy rains already start in May. Maybe splitting this
+into seasons will give us a better view?
+
+```{r echo= FALSE, warning=FALSE}
+# Create new column chr_month which is a double insead of a factor
+map_fatality$chr_month <- as.numeric(map_fatality$month)
+# Cut the months into seasons, using the cut() function
+map_fatality$season <- as.character(cut(map_fatality$chr_month,
+                                breaks=c('0','2','5','8','11','12'),
+                                labels = c('Winter','Spring','Summer','Autumn','Winter')))
+```
+
+```{r echo= FALSE, warning=FALSE}
+# Group by season and landslide size and summarise this with the sum of fatalities
+season.size <- group_by(map_fatality,season,landslide_size)
+fatality.season.size <- summarise(season.size,sum(fatality_count))
+# Rename Columns
+names(fatality.season.size) <- c("Season","Size","Fatalities")
+# Remove the "unknown" landslide size
+fatality.season.size <- subset(fatality.season.size,Size != "unknown")
+# Ungroup, else it throws this error: "Error in grouped_indices_grouped_df_impl(.data) : Column `month` is unknown"
+fatality.season.size <- ungroup(fatality.season.size,Season,Size,Fatalities)
+```
+
+```{r echo=FALSE, warning=FALSE}
+# Plot Heatmap
+ggplot(data = fatality.season.size, aes(x = Season, y = Size)) +
+  geom_tile(aes(fill = Fatalities))+
+  ggtitle("Heatmap of season versus size shaded by mass movement deaths")
+```
+
+So what variables can we use in our model?
+
+```{r echo=FALSE, warning=FALSE}
+# Create scatterplot
+ggplot(fatality_subset,aes(injury_count,fatality_count))+
+  geom_jitter(aes(alpha=1/2,color = time_of_year))+
+  scale_color_viridis()+
+  scale_x_sqrt()+
+  scale_y_sqrt()
+```
+
+```{r echo=FALSE, warning=FALSE}
+# Make landslide_size ordered
+fatality_subset$landslide_size <- factor(fatality_subset$landslide_size,
+                                      ordered = TRUE,
+                                      levels = c("small","medium","large","very_large","catastrophic"))
+
+# Create scatterplot
+ggplot(fatality_subset,aes(injury_count,fatality_count))+
+  geom_jitter(aes(alpha=1/2,color = landslide_size))+
+  scale_color_viridis_d(direction = -1)+
+  scale_x_sqrt()+
+  scale_y_sqrt()
+```
+
+```{r echo=FALSE, warning=FALSE}
+# Create linear regression models
+m1 <- lm(fatality_count ~ injury_count,
+         data = subset(fatality_subset,
+                       fatality_count < 1000))
+m2 <- update(m1, ~ . + time_of_year)
+m3 <- update(m2, ~ . + landslide_size)
+# Make mtable of the model
+mtable(m1,m2,m3)
+```
+
+# Multivariate Analysis
+
+### Talk about some of the relationships you observed in this part of the \
+investigation. Were there features that strengthened each other in terms of \
+looking at your feature(s) of interest?
+
+* Landslides and Mudslides have become less deadly since 2007, meanwhile the
+  number of landslide and mudslide events increased over the same period of time
+* The 2013-2017 margin was the most fatal in terms of deadly mass movements
+  between 1 and 10 deaths. This is interesting as total landslide and mudslide
+  deaths did however decrease in recent years.
+* Fatalities seem to be concentrated in East Asia, where the major killer is
+  very large mass movement
+* Very large mass movement in June is the largest cause of death with around
+  5000 deaths, while very large mass movements in Summer seems like the most
+  deadly with more than 6000 deaths in total.
+* The last two plots show that I can use a linear model to predict the number of
+  fatalities, which I did as seen above.
+
+### Were there any interesting or surprising interactions between features?
+
+The most interesting relationship was between my time_of_year variable and
+fatality_count. This clearly showed that fatalities are decreasing 
+among the mudslide and and landslide mass movements, which are by far the
+largest mass movements categories. Meanwhile the number of these mass movement
+events have increased over the same period of time
+
+### OPTIONAL: Did you create any models with your dataset? Discuss the \
+strengths and limitations of your model.
+
+Yes, I created a linear model with fatality count below a 1000 and injury count.
+
+The model explained only 36% of the variance in the number of fatalities. Based
+on my plots I used the time_of_year and landslide_size variables, which both
+improved the R^2 value substantially. The landslide size variable had the
+greatest effect on the R^2 value, improving this by almost a fifth.
+------
+
+# Final Plots and Summary
+
+### Plot One
+```{r echo=FALSE, warning=FALSE, Plot_One}
+# Plot the scatter graph of fatalities over time, using only mudslide and
+# landslide mass movements
+ggplot(subset(fatality_subset,
+              landslide_category == c("mudslide","landslide")),
+       aes(x=time_of_year,
+           y=fatality_count,
+           colour=landslide_category))+
+  geom_point(alpha =1/2, position = position_jitter(height = 0))+
+  ggtitle("Fatalities over time")+
+  xlab("Year")+
+  ylab("Fatalities")+
+  scale_y_log10()+
+  facet_grid(rows = vars(landslide_category))+
+  geom_line(stat="summary", fun.y = mean, color ='black')+
+  geom_smooth(formula = y~x, color = 'blue', linetype = 2, method = 'loess')
+```
+
+### Description One
+
+The deaths claimed by landslides seems to be deceasing by about 50% from 2007
+until 2017. The deaths from mudslides decrease by more than 50% in the same time
+period. This is really interesting as it shows that the two major causes of
+death among mass movements are slowly becoming less deadly.
+
+### Plot Two
+
+```{r echo=FALSE, warning=FALSE, Plot_Two}
+# Plot the scatter graph of events over time, using only mudslide and
+# landslide mass movements, and limit the timescale to that from the above plots
+ggplot(subset(landslide_data.two_slides,
+              landslide_category == c("mudslide","landslide")),
+       aes(x=time_of_year,
+           y=n ,
+           colour=landslide_category))+
+  geom_point(alpha =1/2, position = position_jitter(height = 0))+
+  ggtitle("Events over time")+
+  xlab("Year")+
+  ylab("Count")+
+  ylim(c(0,200))+
+  xlim(c(2007,2018))+
+  facet_grid(rows = vars(landslide_category))+
+  geom_line(stat="summary", fun.y = mean, color ='black')+
+ geom_smooth(formula = y~x, color = 'blue', linetype = 2, method = 'loess')
+```
+
+### Description Two
+
+While the previous plot showed that deaths claimed by landslides and mudslides
+seem to be deceasing. This plot clearly shows that there is an increase in the
+number of these mass movements. So this means while there is a increase in
+events, there is a decrease in fatalities at the same time.
+
+### Plot Three
+```{r echo=FALSE, warning=FALSE, Plot_Three}
+# Plot the Heatmap
+ggplot(data = fatality.season.size, aes(x = Season, y = Size)) +
+  geom_tile(aes(fill = Fatalities))+
+  ggtitle("Heatmap of season versus size shaded by mass movement deaths")
+```
+
+### Description Three
+
+Summer is the most deadly season due to mass movement. In the plot we can
+clearly see that very large landslides in Summer are the largest killer. 
+Surprisingly Winter and Autumn seem to be the least deadly season.
+
+------
+
+# Reflection
+
+This was a data set that I found myself, so naturally I had to do a bit of
+cleaning up to do first. I removed columns that I knew would not be helpful and
+had no use, such as edited_date or photo_link. I started off my exploration by
+looking at the the fatality and injury count variables which I instantly noticed
+when I first started looking at the NASA Global Landslide Catalog (GLC) data.
+This showed me that extremely deadly events were not common, which was a
+important stepping stone in my analysis.
+
+I also created another data frame after my new, clean landslide_data data frame,
+called fatality_subset. I used this data frame most of the time as it excluded
+all fatality_count values which were zero or NA. Next I found that extracting
+information from existing columns could become very helpful. I first did this
+when I extracted the year and month from the original event_date variable. This
+process helped me immense and many of my further explorations were based on
+these variables.
+
+Using the landslide_size variable also became more and more important. This
+variable showed important insights and in my Bivariate plot section I discovered
+that the size of landslides was based on the median value of fatality, with the
+largest mass movements having the largest median fatalities. I also wanted to
+explore where these mass movements took place so I started using the longitude
+variable which suggested that a majority of events and deaths occurred in the
+northern hemisphere and using maps in my multivariate analysis I found which
+countries were affected the most.
+
+The most difficult parts was thinking which insights were really of importance
+and what variables could help in predicting further landslides. Also a problem
+was the lack of numerical variables in the data, which made me rely heavily on
+the fatality_count variable. I also struggled in creating the maps using the
+map_data() function, I finally got the idea of using the dplyr package to group
+and summarize the data. I would count creating the maps and the insights gained
+from the graphs in the final plots section as the greatest successes from
+analyzing the data.
+
+In future I would think that I would want to use regex or the stringr package to
+extract the information in the event description variable. Analyzing the sources
+of information might also be helpful in gaining better insights.
