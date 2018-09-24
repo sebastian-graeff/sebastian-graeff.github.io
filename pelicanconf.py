@@ -26,14 +26,11 @@ AUTHOR_FEED_ATOM = None
 AUTHOR_FEED_RSS = None
 
 # Blogroll
-LINKS = (('Pelican', 'http://getpelican.com/'),
-         ('Python.org', 'http://python.org/'),
-         ('Jinja2', 'http://jinja.pocoo.org/'),
-         ('You can modify those links in your config file', '#'),)
+LINKS = (('Visit my educational website', 'https://www.kids-world-travel-guide.com'),)
 
 # Social widget
-SOCIAL = (('You can add links in your config file', '#'),
-          ('Another social link', '#'),)
+SOCIAL = (('Find me on Linkedin', 'https://www.linkedin.com/in/sebastian-graeff/'),
+          ('Or visit my GitHub profile', 'https://github.com/sebastian-graeff'),)
 
 DEFAULT_PAGINATION = 5
 
@@ -48,7 +45,7 @@ DIRECT_TEMPLATES = ('index','tags', 'categories', 'authors', 'archives', 'search
 
 JINJA_ENVIRONMENT = {'extensions': ['jinja2.ext.i18n']}
 
-MARKUP = ('md', 'ipynb', 'rmd','html')
+MARKUP = ('md', 'ipynb', 'rmd', 'html')
 
 IPYNB_SKIP_CSS=True
 
